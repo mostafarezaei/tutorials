@@ -1,0 +1,16 @@
+{
+  "Parameters" : {
+    "TUTECSInstanceType": "fargate",
+    "TUTApplicationDataVolumeSize": 50,
+    "TUTApplicationRootVolumeSize": 20,
+    "TUTDBInstanceType": "serverless",
+    "TUTServerlessAuroraMinCapacity": 2,
+    "TUTServerlessAuroraMaxCapacity": 4,
+    "TUTECSMaxInstances": 3,
+    "TUTECSMinInstances": 1,
+    "TUTECSDesiredInstances": 1,
+    "TUTDBName": "tutdb",
+    "TUTDBEngineVersion": "10.14",
+    "TUTEnvironmentStage": "dev",
+  }
+}

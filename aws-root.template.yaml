@@ -1,0 +1,343 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: >
+
+  This Cloudformation Template deploys a TUT Application Infrastructure. 
+
+  Disclaimber: Not for Production Use. Demo and Testing purposes only. 
+
+  Author: Mostafa Rezaei <mostafa.ezaeir@gmail.com>
+
+Parameters:
+  TUTECSMaxInstances:
+    Type: Number
+    Description: Maximum number of ECS Worker Instances
+    Default: 3
+  TUTECSMinInstances:
+    Type: Number
+    Description: Minimum number of ECS Worker Instances
+    Default: 1
+  TUTECSDesiredInstances:
+    Type: Number
+    Description: Desired number of ECS Worker Instances
+    Default: 1
+  TUTApplicationMaxInstances:
+    Type: Number
+    Description: Maximum number of appserver instances
+    Default: 1
+  TUTApplicationMinInstances:
+    Type: Number
+    Description: Minimum number of appserver instances
+    Default: 1
+  TUTApplicationDesiredInstances:
+    Type: Number
+    Description: Desired number of appserver instances
+    Default: 1
+  TUTDBName:
+    Description: Database Name
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+    AllowedPattern: "^[a-zA-Z]+[0-9a-zA-Z_]*$"
+    Default: frontendapp
+  TUTDBEngineVersion:
+    Description: Database engine version for Aurora PostgreSQL
+    Type: String
+    Default: 10.7
+  TUTECSInstanceType:
+    Description: Instance type for ECS Cluster worker nodes
+    Type: String
+    Default: fargate
+    AllowedValues:
+      - fargate
+      - t3a.small
+      - t3a.medium
+      - t3a.large
+      - t3a.xlarge
+      - t3a.2xlarge
+      - c5a.large
+      - c5a.xlarge
+      - c5a.2xlarge
+      - c5a.4xlarge
+      - c5a.8xlarge
+      - c5a.12xlarge
+      - c5a.16xlarge
+      - c5a.24xlarge
+      - m5a.large
+      - m5a.xlarge
+      - m5a.2xlarge
+      - m5a.4xlarge
+      - m5a.8xlarge
+      - m5a.12xlarge
+      - m5a.16xlarge
+      - m5a.24xlarge
+      - r5a.large
+      - r5a.xlarge
+      - r5a.2xlarge
+      - r5a.4xlarge
+      - r5a.8xlarge
+      - r5a.12xlarge
+      - r5a.16xlarge
+      - r5a.24xlarge
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.8xlarge
+      - c5.12xlarge
+      - c5.16xlarge
+      - c5.24xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - m5.8xlarge
+      - m5.12xlarge
+      - m5.16xlarge
+      - m5.24xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - r5.8xlarge
+      - r5.12xlarge
+      - r5.16xlarge
+      - r5.24xlarge
+  TUTApplicationDataVolumeSize: 
+    Description: Size of the application instance data volume
+    Type: Number
+    Default: 50
+  TUTApplicationRootVolumeSize: 
+    Description: Size of the application instance data volume
+    Type: Number
+    Default: 20
+  TUTDBInstanceType:
+    Description: DB RDS instance type
+    Type: String
+    AllowedValues:
+      - serverless
+      - db.m5.large
+      - db.m5.xlarge
+      - db.m5.2xlarge
+      - db.m5.4xlarge
+      - db.m5.12xlarge
+      - db.m5.24xlarge
+      - db.r4.large
+      - db.r4.xlarge
+      - db.r4.2xlarge
+      - db.r4.4xlarge
+      - db.r4.8xlarge
+      - db.r4.16xlarge
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t3.large
+      - db.t3.xlarge
+      - db.t3.2xlarge
+    Default: serverless
+  TUTServerlessAuroraMinCapacity:
+    Description: The minimum capacity for the Amazon Aurora Serverless Cluster.
+    Type: Number
+    Default: 2 
+  TUTServerlessAuroraMaxCapacity:
+    Description: The maximum capacity for the Amazon Aurora Serverless Cluster
+    Type: Number
+    Default: 4
+  TUTEnvironmentStage:
+    Type: String
+    Description: Select the appropriate environment
+    AllowedValues:
+      - stage
+      - prod
+      - dev
+    Default: dev
+  TUTEnvironmentType: 
+    Type: String
+    Description: Scalable or single-instance Setup
+    AllowedValues:
+      - scalable 
+      - single
+    Default: scalable
+  TUTEnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+    Default: tutonaws
+  TUTECRRegistry: 
+    Description: ECR Registry to be used. 
+    Type: String
+    Default: ""
+  TUTStackBucketStack:
+    Description: S3 Bucket Stack that contains scripts and sources
+    Type: String
+  TUTMemory:
+    Description: Memory constraints for Bluelight container
+    Type: Number
+    Default: 1024
+  TUTCPU:
+    Description: CPU constraints for Bluelight container
+    Type: Number
+    Default: 512
+  TUTACMCertArn: 
+    Description: Set this parameter if you want to reuse an existing ACM certificate for your deployment
+    Type: String
+    Default: "AWS::NoValue"
+
+Resources:
+  TUTNotificationEncKey: 
+    Type: AWS::KMS::Key
+    Properties:
+      Description: TUT-Internal-SNS Encryption Key
+      KeyPolicy:
+        Version: 2012-10-17
+        Id: allow-root-access-to-key
+        Statement:
+          - Sid: allow-root-to-delegate-actions
+            Effect: Allow
+            Principal:
+              AWS: !Sub arn:aws:iam::${AWS::AccountId}:root
+            Action:
+              - kms:*
+            Resource: '*'
+          - Sid: allow-ses-to-use-key
+            Effect: Allow
+            Principal:
+              Service: ses.amazonaws.com
+            Action:
+              - kms:Decrypt
+              - kms:GenerateDataKey*
+            Resource: '*'
+          - Sid: Allow access through SNS for all principals in the account that are authorized
+              to use SNS
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+            - kms:Decrypt
+            - kms:GenerateDataKey*
+            - kms:CreateGrant
+            - kms:ListGrants
+            - kms:DescribeKey
+            Resource: "*"
+            Condition:
+              StringEquals:
+                kms:ViaService: sns.eu-central-1.amazonaws.com
+                kms:CallerAccount: '545095046790'
+          - Sid: Allow direct access to key metadata to the account
+            Effect: Allow
+            Principal:
+              AWS: arn:aws:iam::545095046790:root
+            Action:
+            - kms:Describe*
+            - kms:Get*
+            - kms:List*
+            - kms:RevokeGrant
+            Resource: "*"
+
+  TUTSystemLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Join ["", ["/", !Ref "AWS::StackName", "/systemlogs"]]
+      RetentionInDays: 7
+
+  TUTApplicationLogsGroup:
+    Type: AWS::Logs::LogGroup
+    Properties: 
+      LogGroupName: !Join ["", ["/", !Ref "AWS::StackName", "/applicationlogs"]]
+      RetentionInDays: 7
+
+  # TUTDatabaseStack:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL:
+  #       Fn::Join:
+  #         - ""
+  #         - - "https://s3.amazonaws.com/"
+  #           - Fn::ImportValue: !Sub "${TUTStackBucketStack}-TUTStackBucket"
+  #           - "/aws-database.template.yaml"
+  #     Parameters:
+  #       TUTDBInstanceType:
+  #         Ref: TUTDBInstanceType
+  #       TUTServerlessAuroraMinCapacity:
+  #         Ref: TUTServerlessAuroraMinCapacity
+  #       TUTServerlessAuroraMaxCapacity:
+  #         Ref: TUTServerlessAuroraMaxCapacity
+  #       TUTDBName:
+  #         Ref: TUTDBName
+  #       TUTDBEngineVersion:
+  #         Ref: TUTDBEngineVersion
+  #       TUTEnvironmentStage:
+  #         Ref: TUTEnvironmentStage
+  #     Tags:
+  #       - Key: Name
+  #         Value:
+  #           Fn::Sub: TUTDatabaseStack-${TUTEnvironmentName}
+  #       - Key: Environment
+  #         Value: !Ref TUTEnvironmentName
+  #       - Key: Stage
+  #         Value: !Ref TUTEnvironmentStage
+
+  # TUTAppStackSingle:
+  #   Type: AWS::CloudFormation::Stack
+  #   Properties:
+  #     TemplateURL:
+  #       Fn::Join:
+  #         - ""
+  #         - - "https://s3.amazonaws.com/"
+  #           - Fn::ImportValue: !Sub "${TUTStackBucketStack}-TUTStackBucket"
+  #           - "/aws-tutappsingle.template.yaml"
+  #     Parameters:
+  #       TUTStackBucketStack:
+  #         Fn::ImportValue: !Sub "${TUTStackBucketStack}-TUTStackBucket"
+  #       TUTSystemLogsGroupArn:
+  #         Fn::GetAtt:
+  #           - TUTSystemLogsGroup
+  #           - Arn 
+  #       TUTSystemLogsGroup:
+  #         Ref: TUTSystemLogsGroup
+  #       TUTApplicationLogsGroupArn:
+  #         Fn::GetAtt:
+  #           - TUTApplicationLogsGroup
+  #           - Arn 
+  #       TUTApplicationLogsGroup:
+  #         Ref: TUTApplicationLogsGroup
+  #       TUTApplicationSecurityGroup:
+  #         Fn::GetAtt:
+  #           - TUTSecurityGroupStack
+  #           - Outputs.TUTApplicationSecurityGroup
+  #       TUTLatestApplicationAmiId:
+  #         Fn::GetAtt:
+  #           - "TUTAMIFinderStack"
+  #           - Outputs.TUTApplicationAMIParameter
+  #       TUTEnvironmentStage:
+  #         Ref: TUTEnvironmentStage
+  #       TUTApplicationDataVolumeSize:
+  #         Ref: TUTApplicationDataVolumeSize
+  #       TUTApplicationRootVolumeSize:
+  #         Ref: TUTApplicationRootVolumeSize
+  #       TUTApplicationMaxInstances:
+  #         Ref: TUTApplicationMaxInstances
+  #       TUTApplicationMinInstances:
+  #         Ref: TUTApplicationMinInstances
+  #       TUTApplicationDesiredInstances:
+  #         Ref: TUTApplicationDesiredInstances
+  #     Tags:
+  #       - Key: Name
+  #         Value:
+  #           Fn::Sub: TUTApplicationStackSingle-${TUTEnvironmentName}
+  #       - Key: Environment
+  #         Value: !Ref TUTEnvironmentName
+  #       - Key: Stage
+  #         Value: !Ref TUTEnvironmentStage
+
+Outputs:
+  TUTSystemLogsGroup:
+    Description: The System LogGroup for Cloudwatch
+    Value: 
+      Ref: TUTSystemLogsGroup
+  TUTApplicationLogsGroup:
+    Description: The Application LogGroup for Cloudwatch
+    Value: 
+      Ref: TUTApplicationLogsGroup

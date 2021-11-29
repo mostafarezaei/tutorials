@@ -1,0 +1,21 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: > 
+
+  This Cloudformation Template deploys the registry to handle tutorial container deployment. The Template deploys an ECR registry for images to be pulled. 
+
+  Disclaimer: Not for production use. Demo and testing purposes only.
+
+  Author: Mostafa Rezaei <mostafa.ezaeir@gmail.com>
+
+Resources:
+  TUTImageRegistry:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: tutorial/registry
+
+Outputs: 
+  TUTImageRegistry:
+    Description: Registry name for the ECR registry holding Bluelight and Scalelite Images
+    Value: 
+      Ref: TUTImageRegistry

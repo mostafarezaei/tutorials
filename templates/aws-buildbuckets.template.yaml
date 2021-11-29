@@ -1,0 +1,33 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: > 
+
+  This Cloudformation Template deploys the prerequisites to handle the Tutorial application deployment. The Template deploys an S3 Bucket
+  for archive and Application bits.
+
+  Disclaimer: Not for production use. Demo and testing purposes only.
+
+  Author: Mostafa Rezaei <mostafa.ezaeir@gmail.com>
+
+Resources:
+  TUTStackBucket:
+    Type: AWS::S3::Bucket
+    Description: This is the S3 Bucket for the CF Template files.
+    DeletionPolicy: Delete
+  TUTOutputBucket:
+    Type: AWS::S3::Bucket
+    Description: This is the S3 Bucket for the output files of tutorials.
+    DeletionPolicy: Delete
+Outputs: 
+  TUTStackBucketName:
+    Description: Bucket name for the bucket holding CF Template files.
+    Value: 
+      Ref: TUTStackBucket
+    Export: 
+      Name: !Sub "${AWS::StackName}-TUTStackBucket"
+  TUTOutputBucketName:
+    Description: Bucket name for the bucket holding tutorial's output files.
+    Value: 
+      Ref: TUTOutputBucket
+    Export: 
+      Name: !Sub "${AWS::StackName}-TUTOutputBucket"
