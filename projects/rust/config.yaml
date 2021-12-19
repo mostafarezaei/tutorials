@@ -1,0 +1,18 @@
+---
+database:
+  host: "dbtut.cg9hvcbz8wtg.ca-central-1.rds.amazonaws.com"
+#  host: "localhost"
+  port: "5432"
+  dbname: "dbtut"
+#  dbname: "postgres"
+  user: "postgres"
+  password: "Mostafa1360"
+#  password: "postgres"
+aws:
+  accessKey: "AKIAXGDMHGBWIK4D7RE2"
+  secretKey: "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"
+  region: "ca-central-1"
+  cmkName: "5fb80522-0be1-41c0-9fb5-b5e309481254"
+s3:
+  outputBucketName: 'tutexample13-sources-tutoutputbucket-c7494mx9cspn'
+  outputFileBaseName: 'outputFile'
