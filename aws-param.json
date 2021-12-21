@@ -11,6 +11,6 @@
     "TUTECSDesiredInstances": 1,
     "TUTDBName": "tutdb",
     "TUTDBEngineVersion": "10.14",
-    "TUTEnvironmentStage": "dev",
+    "TUTEnvironmentStage": "dev"
   }
 }

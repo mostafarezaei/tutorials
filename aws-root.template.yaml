@@ -161,10 +161,6 @@ Parameters:
       - scalable 
       - single
     Default: scalable
-  TUTEnvironmentName:
-    Description: An environment name that is prefixed to resource names
-    Type: String
-    Default: tutonaws
   TUTECRRegistry: 
     Description: ECR Registry to be used. 
     Type: String
