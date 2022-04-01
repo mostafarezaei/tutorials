@@ -9,8 +9,8 @@ database:
   password: "Mostafa1360"
 #  password: "postgres"
 aws:
-  accessKey: "AKIAXGDMHGBWIK4D7RE2"
-  secretKey: "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"
+  accessKey: ""
+  secretKey: ""
   region: "ca-central-1"
   cmkName: "5fb80522-0be1-41c0-9fb5-b5e309481254"
 s3:

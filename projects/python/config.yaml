@@ -6,8 +6,8 @@
     user: "postgres"
     password: "Mostafa1360"
   aws:
-    accessKey: "AKIAXGDMHGBWIK4D7RE2"
-    secretKey: "IIyo9+zbIVM8727AUaRjHgvHqUTawMlbwjRAqPi9"
+    accessKey: "PUT_YOUR_ACCESS_KEY_HERE"
+    secretKey: "PUT_YOUR_SECRET_KEY_HERE"
   s3:
     outputBucketName: 'tutexample13-sources-tutoutputbucket-c7494mx9cspn'
     outputFileBaseName: 'outputFile'
